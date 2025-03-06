@@ -12,9 +12,11 @@ import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import { z } from 'zod';
+import IssueFormSkeleton from './IssueFormSkeleton';
 
 const SimpleMDE = dynamic(() => import('react-simplemde-editor'), {
   ssr: false,
+  loading: () => <IssueFormSkeleton />,
 });
 
 type IssueFormData = z.infer<typeof issueSchema>;
@@ -54,11 +56,13 @@ const IssueForm = ({ issue }: { issue?: Issue }) => {
       )}
       <form className="space-y-3" onSubmit={onSubmit}>
         <TextField.Root
-          defaultValue={issue?.title}
           placeholder="Title"
+          defaultValue={issue?.title}
           {...register('title')}
         ></TextField.Root>
+
         <ErrorMessage>{errors.title?.message}</ErrorMessage>
+
         <Controller
           name="description"
           control={control}
