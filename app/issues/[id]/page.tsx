@@ -7,20 +7,23 @@ import IssueDetails from './IssueDetails';
 import { getServerSession } from 'next-auth';
 import authOptions from '@/app/auth/authOptions';
 import AssigneeSelect from './AssigneeSelect';
+import { cache } from 'react';
 
 interface Props {
   params: Promise<{ id: string }>; // Note: params is now a Promise
 }
 
+const fetchUser = cache((issueId: number) =>
+  prisma.issue.findUnique({ where: { id: issueId } })
+);
+
 const IssueDetailPage = async ({ params }: Props) => {
-  const session = await getServerSession(authOptions);
-
-  // Await the dynamic API parameters before using them.
+  // Destructure params here
   const { id } = await params;
+  const issueId = parseInt(id);
 
-  const issue = await prisma.issue.findUnique({
-    where: { id: parseInt(id) },
-  });
+  const session = await getServerSession(authOptions);
+  const issue = await fetchUser(issueId);
 
   if (!issue) notFound();
 
@@ -43,10 +46,11 @@ const IssueDetailPage = async ({ params }: Props) => {
 };
 
 export async function generateMetadata({ params }: Props) {
-  const { id } = await params; // Await the promise here
-  const issue = await prisma.issue.findUnique({
-    where: { id: parseInt(id) },
-  });
+  // Destructure params here
+  const { id } = await params;
+  const issueId = parseInt(id);
+
+  const issue = await fetchUser(issueId);
 
   return {
     title: issue?.title,
